@@ -1,4 +1,4 @@
-# CSTEP: Casual Staff Time Entry Program
+# CSTEP: Casual Staff Time Entry Project
 
 ## Description
 
