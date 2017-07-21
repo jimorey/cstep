@@ -125,9 +125,9 @@ def db_init(dbname, debug)
         #setup for postgresql database
         #'postgres://user:password@hostname/database'
         #local
-        DataMapper.setup(:default, 'postgres://jimorey:sk8er9@localhost/development')
+        #DataMapper.setup(:default, 'postgres://jimorey:sk8er9@localhost/development')
         #heroku
-        #DataMapper.setup(:default, ENV['DATABASE_URL'] || 'postgres://localhost/mydb')
+        DataMapper.setup(:default, ENV['DATABASE_URL'] || 'postgres://localhost/mydb')
 
         DataMapper.finalize
 end
