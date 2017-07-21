@@ -1,0 +1,54 @@
+---
+user1:
+    sAMAccountName: jim
+    password: 1234
+    givenname: Jim
+    sn: Reynolds
+    group: 3
+    displayname: Jim Reynolds
+    email:
+
+user2:
+    sAMAccountName: alfred
+    password: 1234
+    givenname: Alfred
+    sn: Burgess
+    group: 2
+    displayname: Alfred Burgess
+    email:
+
+user3:
+    sAMAccountName: craig
+    password: 1234
+    givenname: Craig
+    sn: Duncan
+    group: 1
+    displayname: Craig Duncan
+    email:
+
+user4:
+    sAMAccountName: tyler
+    password: 1234
+    givenname: Tyler
+    sn: Smith
+    group: 5
+    displayname: Tyler Smith
+    email:
+
+user5:
+    sAMAccountName: sahan
+    password: 1234
+    givenname: Sahan
+    sn: Narawatna
+    group: 2
+    displayname: Sahan Nawaratna
+    email:
+
+user6:
+    sAMAccountName: hugh
+    password: 1234
+    givenname: Hugh
+    sn: Owens
+    group: 3
+    displayname: Hugh Owens
+    email:

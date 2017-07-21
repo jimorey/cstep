@@ -1,0 +1,290 @@
+<head>
+
+<title>C-STEP Time Entry</title>
+<!-- Script required to show/hide groups based on course selection -->
+<!--script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script-->
+
+<script type="text/javascript">
+
+document.getElementById("alphaheader").innerHTML = "<h1>Time Entry</h1>";
+
+
+$(document).ready(function(){
+  highlightRow("#todo-list");    // Highlights selected row when checkbox for respective row is selected/checked
+  checkAll("#todo-list");        // Hightlight and checks all checkboxes when select all checkbox in heading is clicked
+
+  // Show or hide columns
+  toggleNotesColumn();
+  toggleManNotesColumn();
+  toggleSubgroupColumn();
+
+  // Show or hide Subgroup field in entry form
+  toggleSubgroup();
+
+  $('.manNote').siblings().andSelf().css('background-color','#ffb3b3');
+
+  // Settings for Datepicker and Timepicker
+  initialiseDateTimePicker();
+  // Settings for Tablesorter
+  initialiseSorter();
+
+  $("#sum").text("Total Hours: " + sumHours('hours'));
+
+});
+
+//CHANGES ALL DISPLAYED DATES WITH CLASS *changeDates* TO DD/MM/YYYY FORMAT
+$(window).load(function(){
+  changeDateTime();
+});
+</script>
+
+</head>
+
+<body class="background">
+
+<!-- User Input form -->
+<div class="timeEntry">
+  <!-- Need to put table like heading for each input -->
+
+<form id="entryForm" action="/new" class="form-inline" method="POST" style="padding-top: 10px">
+  <table class="table table-striped" style="width: 100%; text-align:left">
+    <thead class ="TableHeading">
+      <tr style="text-align:left">
+        <th>Date</th>
+        <th>Activities</th>
+        <th>Start Time</th>
+        <th>End Time</th>
+        <th>Total Hours</th>
+        <th >Group</th>
+        <th style='display:none;' id='subgroupHeading'>Subgroup</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tr>
+      <td>
+          <!-- Must be DD - 0-31  MM - 0-12  YYYY any for now (change to current year)
+          -feburary 28/29 days validation? -->
+          <input type="text" name="date" id="date" class="datepicker" placeholder="Select Date" autocomplete="off"  required>
+      </td>
+      <td >
+        <!-- Creates dropdown menu, where value is recorded in database -->
+        <select name="activity" required>
+          <option value="" disabled selected>Select your activity</option>
+          <% @actionlist.each do |i| %>
+            <option value=<%= i.activity %>><%= i.activity %></option>
+          <% end %>
+        </select>
+      </td>
+      <td>
+        <input id="startTime" type="text" class="timepicker" placeholder="Enter starting time" name="startTime" required onblur="TotalHours()">
+      </td>
+      <td>
+        <input id="endTime" type="text" class="timepicker" placeholder="Enter ending time" name="endTime"  required onblur="TotalHours()">
+      </td>
+      <td>
+        <!-- Displays total hours to 2 decimal places -->
+        <input id="HourShow" disabled type="text" class="timepicker">
+          <!-- Is the hidden hours that is used to save hours to the database -->
+        <input id="Hours" type="hidden" name="hours" required>
+      </td>
+      <td>
+        <!-- Creates dropdown menu, where value=what is printed/stored in database -->
+        <select id="Cgroup" name="Cgroup" required>
+          <!-- If course!= study tours default value will be N/A -->
+          <option value="N/A" disabled selected>Select your C group</option>
+          <% @courses.each do |i| %>
+          <!-- optional: change value to i.shortname -->
+        <!--<option value=<%= i.description %>><%= i.description %></option> -->
+        <option value="<%= i.description %>"><%= i.description %></option>
+          <% end %>
+        </select>
+      </td>
+      <td style='display:none;' id='subgroupRow'>
+        <!-- This will only be displayed when course=study tours due to jquery in script above -->
+        <div style='display:none;' id='subgroupInput'>
+          <!-- TO DO: Select different options based on primary course selection -->
+            <select name="subgroup" id="subgroupReq">
+              <option value="N/A" selected>Select your project</option>
+              <% @projects.each do |i| %>
+              <option value="<%= i.shortname %>"><%= i.description %></option>
+              <% end %>
+          </select>
+        </div>
+      </td>
+      <td >
+        <input type="text" placeholder="Extra Notes" name="notes">
+      </td>
+    </tr>
+  </table>
+
+    <button type="submit" class="btn btn-primary"
+            onclick="if (formValidation()) {
+                    return true;
+                    }
+                    else return false;"> Save Timesheet</button>
+
+    <button type="reset" class="btn">Reset</button>
+</form>
+</div>
+
+
+
+<!-- Displays Posted timesheet information -->
+  <!-- Need to change to table format -->
+<div class="enteredUnsubmitted">
+<form id="submitEntry" action="/submit" class="form-inline" method="POST" onreset="hoursentryReset()">
+<h3>Entered/Unsubmitted Timesheets</h3>
+<table id="todo-list" class="table table1" style="width:100%; text-align:left">
+  <thead class ="TableHeading">
+    <tr>
+      <th class="sorter-false"><input id="submitSelectAll" class="checkbox" type="checkbox"></th>
+      <th>ID</th>
+      <th>Date</th>
+      <th>Activities</th>
+      <th>Start Time</th>
+      <th>End Time</th>
+      <th>Total Hours</th>
+      <th>Group</th>
+      <th id="subgroupTh" style='display:none;'>Subgroup</th>
+      <th id="normalNoteTh" class="sorter-false" style='display:none;'>Notes</th>
+      <th class="sorter-false" id="manNoteTh" style='display:none;'>Manager's Note </th>
+      <th class="sorter-false"></th>
+    </tr>
+    </thead>
+    <tbody>
+    <% @items.each do |item| %>
+    <% if (item.submitted == false) %>
+    <tr id="<%= item[:id] %>" class="table" >
+  <td class="check"><input class="check" type="checkbox" name="checkbox[]" id="submitted" value="<%= item[:id] %>"></td> <!-- Value of Test when checked -->
+        <td class="item"><%= item[:id]%></td>
+        <td id="tableDate" class="item changeDate" ><%= item[:date]%></td>
+        <td class="item"><%= item[:activity]%></td>
+        <td class="item"><%= item[:start]%></td>
+        <td class="item"><%= item[:end]%></td>
+        <td class="item decimals hours"><%= item[:hours]%></td>
+        <td class="item"><%= item[:Cgroup]%></td>
+        <% if (item[:subgroup] != "N/A") %>  <!-- Non empty -->
+          <td class="item subgroup"><%= item[:subgroup]%></td>
+        <% else %>
+          <td class="item subgroupEmpty"></td>
+        <% end %>
+          <!-- Displays manager notes if they exist -->
+        <% if (item[:notes] != "") %>  <!-- Non empty -->
+          <td class="item normalNote"><%= item[:notes]%></td>
+        <% else %>
+          <td class="item normalNoteEmpty"></td>
+        <% end %>
+          <!-- Displays manager notes if they exist -->
+        <% if (item[:man_note] != nil && item[:man_note] != "") %>  <!-- Non empty -->
+          <td class="item manNote"><%= item[:man_note]%></td>
+        <% else %>
+          <td class="item manNoteEmpty"></td>
+        <% end %>
+  <td id="editEntry" >
+    <a href="javascript:void(0)" onclick="openEdit(<%= item[:id] %>)" class="btn btn-info" name="Edit">Edit</a>
+  </td>
+      <% end %>
+      <% end %>
+    </tr>
+  </table>
+  </tbody>
+    <a href="javascript:void(0)" onclick="openSubmit()" class="btn btn-success" name="submit">Submit Selected</a>
+    <a href="javascript:void(0)" onclick="openDelete()" class="btn btn-danger" name="delete">Delete Selected</a>
+    <button type="reset" class="btn">Reset</button>
+    <span id="sum"></span>
+</form>
+</div>
+
+<div class="submittedUnapproved">
+<h3>Timesheets</h3>
+<form id="selectForm" action="/reload" class="form-inline" method="GET">
+  <select id="selectDisplay" name="LoadedValues" onchange="submit()">
+    <!-- IF statements to keep selected value on page reload reload -->
+    <% if  @display == "view_all" %>
+      <option value="view_all" selected>All</option>
+      <option value="view_unsubmitted">Unsubmitted</option>
+      <option value="view_submitted">Submitted</option>
+      <option value="view_approved">Approved</option>
+    <% end %>
+    <% if  @display == "view_unsubmitted" %>
+      <option value="view_all">All</option>
+      <option value="view_unsubmitted" selected>Unsubmitted</option>
+      <option value="view_submitted">Submitted</option>
+      <option value="view_approved">Approved</option>
+    <% end %>
+    <% if  @display == "view_submitted" %>
+      <option value="view_all">All</option>
+      <option value="view_unsubmitted">Unsubmitted</option>
+      <option value="view_submitted" selected>Submitted</option>
+      <option value="view_approved">Approved</option>
+    <% end %>
+    <% if  @display == "view_approved" %>
+      <option value="view_all">All</option>
+      <option value="view_unsubmitted">Unsubmitted</option>
+      <option value="view_submitted">Submitted</option>
+      <option value="view_approved" selected>Approved</option>
+    <% end %>
+  </select>
+</form>
+<table id="selectTable" class="table table2" style="width:100%; text-align:left">
+  <thead class ="TableHeading">
+    <tr>
+      <th>Date</th>
+      <th>Activities</th>
+      <th>Start Time</th>
+      <th>End Time</th>
+      <th>Total Hours</th>
+      <th>Group</th>
+      <th>Subgroup</th>
+      <th class="sorter-false">Notes</th>
+      <% if  @display == "view_submitted" || @display == "view_unsubmitted"%>
+        <th class="sorter-false"></th>
+      <% end %>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @items.each do |item| %>
+      <% if  @display == "view_all" ||
+            (@display == "view_submitted" && item.submitted == true && item.approved == false) ||
+            (@display == "view_approved" && item.approved == true) || 
+            (@display == "view_unsubmitted" && item.submitted == false) %>
+        <tr id="<%= item[:id] %>">
+          <td class="item changeDate"><%= item[:date]%></td>
+          <td class="item"><%= item[:activity]%></td>
+          <td class="item"><%= item[:start]%></td>
+          <td class="item"><%= item[:end]%></td>
+          <td class="item decimals"><%= item[:hours]%></td>
+          <td class="item"><%= item[:Cgroup]%></td>
+          <td class="item"><%= item[:subgroup]%></td>
+          <td class="item"><%= item[:notes]%></td>
+          <% if  @display == "view_submitted" || @display == "view_unsubmitted"%>
+            <td>
+              <form id="deleteEntry" action="/Delete" method="POST" onreset="formReset()">
+              <a href="javascript:void(0)" onclick="openDelete(<%= item[:id] %>);" class="btn btn-danger" name="delete">Delete</a>
+              <input id="deleteEntryHidden" type="hidden" name="id" value="<%= item[:id] %>">
+              </form>
+            </td>
+          <% end %>
+        </tr>
+      <% end %>
+    <% end %>
+  </tbody>
+  </table>
+  <!-- pager --> 
+  <div class="pager"> 
+          <img src="/img/first.png" class="first"/> 
+          <img src="http://mottie.github.com/tablesorter/addons/pager/icons/prev.png" class="prev"/> 
+          <span class="pagedisplay"></span> <!-- this can be any element, including an input --> 
+          <img src="/img/next.png" class="next"/> 
+          <img src="/img/last.png" class="last"/> 
+          <select class="pagesize" title="Select page size"> 
+              <option selected="selected" value="10">Show 10 entries per page</option> 
+              <option value="20">Show 20 entries per page</option> 
+              <option value="50">Show 50 entries per page</option> 
+              <option value="100">Show 100 entries per page</option>
+          </select>
+  </div>
+</div>
+
+</body>

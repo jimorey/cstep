@@ -1,0 +1,43 @@
+<head>
+<script>
+
+// NEEDED FOR EDIT TO NOT BRING UP BANNER AND LOGOUT/TIME ENTRY/APPROVAL/ACCOUNTS BUTTONS
+   /*$(".logout").toggle();
+   $(".timeentry_btn_ribbon").toggle();
+   $(".approval_btn_ribbon").toggle();
+   $(".accounts_btn_ribbon").toggle();
+
+   $("#banner").toggle();
+
+   $(".bar").toggle();*/
+
+// NEEDED FOR EDIT TO NOT BRING UP BANNER
+window.onclick = function(event) {
+    if (event.target == modal) {
+      $("#disapproveForm").submit();
+      document.getElementById('myModal').style.display = "none";
+    }
+};
+
+/*document.getElementById('banner').style.display = "none";*/
+
+</script>
+</head>
+
+
+
+
+<body>
+  <!-- User Input form -->
+  <form id="disapproveForm" class="form-horizontal" method="post" action="/disapprove/<%= @item.id %>">
+
+  <div class="form-group" id="MGMTnotes">
+    <label for="MGMTnotes" class="col-sm-2 control-label">Enter MGMT notes as to why: </label>
+    <div class="col-sm-10">
+      <input type="text" name="MGMTnotes" value="<%= @item.man_note %>">
+    </div>
+  </div>
+
+  </form>
+
+</body>

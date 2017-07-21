@@ -1,0 +1,158 @@
+<head>
+<script>
+
+// NEEDED FOR EDIT TO NOT BRING UP BANNER AND LOGOUT/TIME ENTRY/APPROVAL/ACCOUNTS BUTTONS
+   /*$(".logout").toggle();
+   $(".timeentry_btn_ribbon").toggle();
+   $(".approval_btn_ribbon").toggle();
+   $(".accounts_btn_ribbon").toggle();
+
+   $("#banner").toggle();
+
+   $(".bar").toggle();*/
+
+// NEEDED FOR EDIT TO NOT BRING UP BANNER
+window.onclick = function(event) {
+    if (event.target == modal) {
+      $("#editForm").submit();
+      document.getElementById('myModal').style.display = "none";
+    }
+};
+
+/*document.getElementById('banner').style.display = "none";*/
+
+// SHOW SUB GROUP IF REQUIRED AT PAGE LOAD
+if (<%= @item.Cgroup == 'Study Tours'%>){
+  $("#subgroup").show();
+}
+else {
+   $("#subgroup").hide();
+}
+
+// SHOW SUBGROUP IF REQUIRED WHEN CGROUP IS CHANGED
+$(function() {
+    $('#Cgroup').change(function(){
+        if($('#Cgroup').val() == 'Study Tours') {
+            $('#subgroup').show();
+        } else {
+            $('#subgroup').hide();
+        }
+    });
+});
+
+// SHOW ABILITY TO EDIT MGMT NOTES ONLY TO MANAGERS
+if (<%= session[:currentpage] == '/hours_entry_page'%>){
+  $("#MGMTnotes").hide();
+}
+else {
+   $("#MGMTnotes").show();
+}
+
+// CHANGE DATE FORMAT
+var date = document.getElementById('date').value;
+document.getElementById('date').value = customDate(date);
+
+</script>
+</head>
+
+<script>
+
+// DATE AND TIME PICKER
+$(document).ready(function() {
+  initialiseDateTimePicker();
+});
+</script>
+
+
+
+
+<body>
+  <!-- User Input form -->
+  <form id="editForm" class="form-horizontal" method="post" action="/edit/<%= @item.id %>">
+
+  <div class="form-group">
+    <label for="date" class="col-sm-2 control-label">Date</label>
+    <div class="col-sm-10">
+      <input type="text" name="date" id="date" class="datepicker entryTableData" value="<%= @item.date %>" required>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="activity" class="col-sm-2 control-label">Select your activity</label>
+    <div class="col-sm-10">
+      <select name="activity" required>
+        <option value="" disabled>Select your activity</option>
+        <% @actionlist.each do |i| %>
+          <option value=<%= i.activity %> <%= @item.activity == i.activity ? 'selected' : '' %> ><%= i.activity %></option>
+        <% end %>
+      </select>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="startTime" class="col-sm-2 control-label">Starting Time</label>
+    <div class="col-sm-10">
+      <input id="startTime" type="text" value="<%= @item.start %>" name="startTime" class="timepicker" autofocus required onblur="TotalHours()">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="endTime" class="col-sm-2 control-label">Ending Time</label>
+    <div class="col-sm-10">
+      <input id="endTime" type="text" value="<%= @item.end %>" name="endTime" class="timepicker" required onblur="TotalHours()">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="Hours" class="col-sm-2 control-label">Total Hours</label>
+    <div class="col-sm-10">
+      <!-- Displays total hours to 2 decimal places -->
+      <input id="HourShow" disabled type="text">
+      <!-- Is the hidden hours that is used to save hours to the database -->
+      <input id="Hours" type="hidden" name="hours" value="<%= @item.hours %>">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="Cgroup" class="col-sm-2 control-label">C Group</label>
+    <div class="col-sm-10">
+      <select id="Cgroup" name="Cgroup">
+        <!-- If Cgroup!= study tours defualt value will be N/A -->
+        <option value="N/A" disabled>Select your C Group</option>
+        <% @courses.each do |i| %>
+          <option value="<%= i.description %>" <%= @item.Cgroup == i.description ? 'selected' : '' %> ><%= i.description %></option>
+        <% end %>
+      </select>
+    </div>
+  </div>
+
+  <!-- This will only be displayed when Cgroup=study tours due to jquery in script above -->
+  <div class="form-group" id="subgroup">
+    <label for="subgroup" class="col-sm-2 control-label">Sub-Group</label>
+    <div class="col-sm-10">
+      <select name="subgroup">
+        <option value="N/A" selected>Select your project</option>
+        <% @projects.each do |i| %>
+          <option value="<%= i.shortname %>" <%= @item.subgroup == i.shortname ? 'selected' : '' %> ><%= i.description %></option>
+        <% end %>
+      </select>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="notes" class="col-sm-2 control-label">Notes</label>
+    <div class="col-sm-10">
+      <input type="text" name="notes" value="<%= @item.notes %>">
+    </div>
+  </div>
+
+  <div class="form-group" id="MGMTnotes">
+    <label for="MGMTnotes" class="col-sm-2 control-label">MGMT Notes</label>
+    <div class="col-sm-10">
+      <input type="text" name="MGMTnotes" value="<%= @item.man_note %>">
+    </div>
+  </div>
+
+  </form>
+
+</body>

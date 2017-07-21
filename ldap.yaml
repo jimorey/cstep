@@ -1,0 +1,6 @@
+ldap: 
+ server: is-win-130.uniwa.uwa.edu.au
+ port: 389
+ base: DC=uniwa, DC=uwa, DC=edu, DC=au
+ domain: uniwa.uwa.edu.au
+

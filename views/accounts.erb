@@ -1,0 +1,347 @@
+<head>
+<title>C-STEP Accounts Staff : Approved Time for HR</title>
+
+  <script type="text/javascript">
+
+    document.getElementById("alphaheader").innerHTML = "<h1>Approved Time For HR</h1>";
+
+    $(document).ready(function() {
+
+      highlightRow("#pendingTable");  // Highlights selected row when checkbox for respective row is selected/checked
+      checkAll("#pendingTable");      // Hightlight and checks all checkboxes when select all checkbox in heading is clicked
+
+
+      var BeginDates = {};
+      var EndDates = {};
+
+      <% @dates_from.each do |d| %>
+        var d1 = new Date("<%= d[:date_from] %>");
+        var d2 = new Date("<%= d[:date_from] %>");
+        /*.setHours(0) is required below as the dates from the CSTEP_DB are in the form YYYY-MM-DD.
+        Creating Date objects in javascript with the form YYYY-MM-DD will set the time to 08:00hrs.
+        Datepicker uses the string DD/MM/YY to create date objects. This format sets the time to 00:00hrs.
+        Strange, I know. You'd think javascript would give date strings of different formats without a
+        specified time the same default time, but javascript does not. Therefore, the time of the CSTEP_DB
+        date objects must be set to 00:00hrs to equal those of the Datepicker date objects to actually compare
+        if they are equal or not.*/
+        d1.setHours(0);
+        d2.setHours(0);
+        BeginDates[d1] = d2;
+      <% end %>
+      <% @dates_to.each do |d| %>
+        var d1 = new Date("<%= d[:date_to] %>");
+        var d2 = new Date("<%= d[:date_to] %>");
+        d1.setHours(0);
+        d2.setHours(0);
+        EndDates[d1] = d2;
+      <% end %>
+
+      $('#datepicker').datepicker({
+        beforeShowDay: function (date) {
+          var Begin = BeginDates[date];
+          var End   = EndDates[date];
+            if (Begin) {
+              return [true, 'BeginHighlight', 'Beginning of Pay Period'];
+            }
+            else if (End) {
+              return [false, 'EndHighlight', 'End of Pay Period'];
+            }
+            else {
+              return [false, '', ''];
+            }
+        },
+        dateFormat: "dd/mm/yy"
+      });
+      $('#datepicker').datepicker(
+        "setDate", new Date("<%= @pp_start_s %>"));
+    });
+    </script>
+
+    <script>
+    $(function() {
+      var userslist = [];
+      <% @users.each do |user| %>
+        userslist.push("<%= user[:displayname] %>");
+      <% end %>
+      $( "#employee" ).autocomplete( {
+        source: userslist
+      });
+    });
+    </script>
+
+    <script>
+    // Run these scipts upon page load
+    document.body.onload = function() {
+      populateTabs();
+      document.getElementById("Pending").style.display = "block";
+      document.getElementById("penTab").className += " active";
+
+      $(document).ready(function(){
+        $("#sumPending").text("Total Hours: " + sumHours('hoursPending'));
+        $("#sumEntered").text("Total Hours: " + sumHours('hoursEntered'));
+      });
+    }
+
+    function openTab(evt, tabName) {
+      // Declare all variables
+      var i, tabcontent, tablinks;
+
+      // Get all elements with class="tabcontent" and hide them
+      tabcontent = document.getElementsByClassName("tabcontent");
+      for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+      }
+
+      // Get all elements with class="tablinks" and remove the class "active"
+      tablinks = document.getElementsByClassName("tablinks");
+      for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+      }
+
+      // Show the current tab, and add an "active" class to the link that opened the tab
+      document.getElementById(tabName).style.display = "block";
+      evt.currentTarget.className += " active";
+    }
+
+    function populateTabs() {
+      // Find a <table> element
+      var pendingTable     = document.getElementById("pendingTable");
+      var enteredTable    = document.getElementById("enteredTable");
+      var row;
+
+      <% @items.each do |item| %>// Add data to cells of table
+        <% if item.approved == true && item.user != session[:username] && (session[:access] == "admin" || session[:access] == "accounts") %>
+          <% if item.entered == false %>
+            row = pendingTable.insertRow(-1);
+            var approve    = row.insertCell(-1);
+            approve.innerHTML    = '<td> <input class="check" type="checkbox" name="checkbox[]" value="<%= item[:id] %>"> </td>';
+          <% elsif item.entered == true %>
+            row = enteredTable.insertRow(-1);
+          <% end %>
+
+          row.id  = <%= item[:id] %>;
+
+          // Insert new cells (<td> elements)
+          var lastname   = row.insertCell(-1);
+          var firstname  = row.insertCell(-1);
+          var date       = row.insertCell(-1);
+          var activity   = row.insertCell(-1);
+          var cas   = row.insertCell(-1);
+          var hours      = row.insertCell(-1);
+          var Cgroup  = row.insertCell(-1);
+          var subgroup   = row.insertCell(-1);
+          var notes      = row.insertCell(-1);
+          var mgmt_notes = row.insertCell(-1);
+
+          <% if item.entered == false %>
+            var edit       = row.insertCell(-1);
+            var pdfScreen = row.insertCell(-1);
+            //TO DO: replace string escapes with DOM function
+            edit.innerHTML       = '<td> <a href="javascript:void(0)" onclick="openPDF(<%= item[:id] %>)" class="btn btn-warning" name="PDF">PDF Payroll</a> </td>'
+          <% end %>
+
+          //vary activities for CAS types
+          <% @castypes.each do |i| %>
+            <% if item[:activity]==i.activity then @CAS=i.castype %>
+            <% end %>
+          <% end %>
+          // Assign data to cells
+          employee.innerHTML   = '<td> <%= item[:user] %> </td>';
+          lastname.innerHTML   = '<td> <%= item[:lastname] %> </td>';
+          firstname.innerHTML  = '<td> <%= item[:firstname] %> </td>';
+          date.innerHTML       = '<td> <%= item[:date] %> </td>';
+          activity.innerHTML   = '<td> <%= item[:activity] %> </td>';
+          cas.innerHTML        = '<td> <%= @CAS %></td>';
+          hours.innerHTML      = '<td> <%= item[:hours] %> </td>';
+          Cgroup.innerHTML  = '<td> <%= item[:Cgroup]%> </td>';
+          subgroup.innerHTML   = '<td> <%= item[:subgroup]%> </td>';
+          notes.innerHTML      = '<td> <%= item[:notes]%> </td>';
+          mgmt_notes.innerHTML = '<td> <%= item[:man_note]%> </td>';
+
+          <% if item.entered == false %>
+            $(hours).addClass('hoursPending');
+          <% elsif item.entered == true %>
+            $(hours).addClass('hoursEntered');
+          <% end %>
+        <% end %>
+      <% end %>
+    }
+  </script>
+</head>
+
+<body>
+
+  <form action="/accounts_page" method="get" name ="payperiod" id="payperiod" class="form-inline">
+    <label for="datepicker">Pay Period:</br></label>
+    <input type="text" name="payperiod" id="datepicker" class="datebox" required>
+    <button type="submit" class="btn find">Set Payperiod</button>
+    <label for="employee">Employee:</br></label>
+    <input type="text" name="employee" id="employee" class="employee"  value="<%= @userDisplay %>">
+    <button type="submit" class="btn find">Find Employee</button>
+  </form>
+
+  <div class="submitselected">
+    <a href="javascript:void(0)" onclick="openEntered()" class="btn btn-success" name="submit">Mark Selected as Entered</a>
+  </div>
+
+  <ul class="tab">
+    <li><a id="penTab" href="#" class="tablinks" onclick="openTab(event, 'Pending')">Approved</a></li>
+    <li><a id="appTab" href="#" class="tablinks" onclick="openTab(event, 'Entered')">Entered</a></li>
+  </ul>
+
+  <form action="/enterapprovals" method="post" name="enterapprovals" id="enterapprovals" onreset="formReset()">
+    <div id="Pending" class="tabcontent">
+      <table id="pendingTable" class="table tablesorter pending">
+        <thead>
+          <tr>
+            <th><input id="submitSelectAll" class="checkbox" type="checkbox"></th>
+            <th>Lastname</th>
+            <th>Firstname</th>
+            <th>Date</th>
+            <th>Activity</th>
+            <th>CAS</th>
+            <th>Total Hours</th>
+            <th>Group</th>
+            <th>Subgroup</th>
+            <th>Notes</th>
+            <th>Manager's Notes</th>
+            <th></th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
+      <button type="reset" class="btn">Reset</button>
+      <span id="sumPending"></span>
+    </div>
+  </form>
+
+  <div id="Entered" class="tabcontent">
+      <table id="enteredTable" class="table tablesorter approved">
+        <thead>
+          <tr>
+            <th>Lastname</th>
+            <th>Firstname</th>
+            <th>Date</th>
+            <th>Activity</th>
+            <th>CAS</th>
+            <th>Total Hours</th>
+            <th>Group</th>
+            <th>Subgroup</th>
+            <th>Notes</th>
+            <th>Manager's Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
+    <span id="sumEntered"></span>
+  </div>
+
+</body>
+
+<style>
+
+.table.table-striped.approved {
+  margin-top: -20px;
+}
+
+.table.table-striped.pending {
+  width: 100%;
+  /*text-align: left;
+  margin-left: -60px;*/
+}
+
+/* Style the list */
+ul.tab {
+  display: block;
+  list-style-type: none; /*style of dot points*/
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: #f1f1f1;
+  width: 10%;
+  height: auto;
+  position: absolute;
+}
+
+/* Float the list items down*/
+ul.tab li {float: down;}
+
+/* Style the links inside the list items */
+ul.tab li a {
+  display: inline-block;
+  color: black;
+  text-align: left;
+  padding: 14px 16px;
+  text-decoration: none;
+  transition: 0.3s;
+  font-size: 17px;
+  width: 100%;
+}
+
+/* Change background color of links on hover */
+ul.tab li a:hover {
+  background-color: #ddd;
+}
+
+/* Create an active/current tablink class */
+ul.tab li a:focus, .active {background-color: #ccc;}
+
+/* Style the tab content */
+.tabcontent {
+  display: none;
+  border-left: none;
+  margin: 0;
+  width: 90%;
+  margin-left: 10%;
+  position: absolute;
+}
+
+.form-inline {
+  display: inline-block;
+  background-color: #f1f1f1;
+  width: 80%;
+  margin: 0;
+  height: 50px;
+  padding-top: 20px;
+}
+
+.submitselected {
+  display: inline-block;
+  width: 20%;
+  height: 50px;
+  margin: 0;
+  margin-left: -4px;
+  background-color: #f1f1f1;
+  padding-top: 20px;
+  float: right;
+}
+
+label {
+  font-size: 17px;
+  margin-left: 17px;
+}
+
+.datebox {
+  width: 100px;
+}
+
+.BeginHighlight a {
+  background-color : #008000 !important;
+  background-image :none !important;
+  color: #FFFFFF !important;
+  font-weight:bold !important;
+  font-size: 12pt;
+}
+
+.ui-datepicker-unselectable.EndHighlight  span.ui-state-default {
+  background-color : #FF0000 !important;
+  background-image :none !important;
+  color: #FFFFFF !important;
+  font-weight:bold !important;
+  font-size: 12pt;
+}
+
+</style>

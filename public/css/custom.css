@@ -1,0 +1,395 @@
+/*!
+ * Custom styles for use throughout pages
+ * Sahan N.
+ */
+
+ /* Fonts and sizes for headers/sections */
+h1 {
+  text-align:center;
+  color: white;
+  font-size: 300%;
+}
+
+/* STYLES FOR VARIOUS BLOCKS */
+
+body {
+  background-color: azure;
+  color: black;
+  font-family: Arial, Helvetica, sans-serif;
+  padding: 0px;
+}
+
+/* ----------------------------------------------- NAV BAR STYLES ----------------------------------------------- */
+
+.bar a{
+  text-decoration: none;
+}
+
+.alphaheader {
+  z-index: 1;
+  position: absolute;
+  margin-left: 20%;
+  margin-top: 3.5%;
+}
+
+
+ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: #333;
+  height: 40px;
+}
+
+li {
+  float: left;
+}
+
+li a {
+  display: block;
+  color: white;
+  text-align: center;
+  padding: 10px 16px;
+  text-decoration: none;
+  font-size: 20px;
+}
+
+.details {
+  display: block;
+  color: grey;
+  text-align: center;
+  padding: 12px 16px;
+  text-decoration: none;
+  font-size: 16px;
+}
+
+/* Change the link color to #111 (black) on hover */
+li a:hover {
+  background-color: #3280cd;
+  color: white;
+}
+
+
+
+/* ----------------------------------------------- END Nav BAR STYLES ----------------------------------------------- */
+
+
+.loginBackground {
+  background: url(/img/background.jpg) no-repeat center fixed;
+  background-size: cover;
+}
+.login, .error, .fixed-input {
+  text-align: left;
+  padding-left: 5%
+}
+.error {
+  color: white;
+  padding-left: inherit;
+  padding-top: 0.5%;
+  font-size: 150%;
+  text-shadow: 5px 5px 3px black;
+}
+.form-login-heading {
+  text-align:left;
+  color: white;
+  font-size: 300%;
+  text-shadow: 5px 5px 3px black;
+}
+
+.header1 {
+  padding-left: 60px;
+  padding-top: 10px;
+  padding-bottom: 10px
+}
+
+.border2 {
+  border-width: 2px;
+  border-color: yellow;
+}
+
+.fixed-input {
+  width: 200px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 15px;
+  padding: 3px;
+  border: 1px solid black;
+  border-radius: 0;
+}
+
+.container-fluid {
+  padding:0;
+  margin-right:auto;
+  margin-left:auto;
+}
+
+.form-group label{
+  padding-right: 15px;
+}
+
+
+/* ----------------------------------------------- VARIOUS TABLE/FORM STYLES ----------------------------------------------- */
+
+.form-inline{
+  margin-left: 60px;
+  margin-right: 60px;
+}
+
+#entryForm tr td input, #entryForm tr td select, #subgroupReq{
+  margin: 0 auto;
+  padding: 5px 0 5px 0;
+  width: 100%;
+  text-indent: 5px;
+}
+
+
+#entryForm tr #subgroupRow #subgroupInput{
+  width: 100%;
+}
+
+
+#editForm {
+  margin : 0;
+  padding: 15px 0 25px 0;
+}
+
+input[type=checkbox] {
+  margin: 0 auto;
+  display: block;
+}
+
+#selectForm{
+  margin: 0;
+  padding-bottom: 20px;
+}
+
+#selectTable {
+  padding-bottom: 0;
+  margin: 0;
+}
+
+.table-striped .TableHeading{
+  background: #737373;
+  color: white;
+  font-size: 15px;
+}
+
+
+.table-striped > tbody > tr:nth-child(odd) > td{
+  background-color: #f2f2f2; /*whiter/light shade than background*/
+  text-align:left;
+  vertical-align: middle;
+}
+
+.table-striped > tbody > tr:nth-child(even) > td{
+  background-color: #d9d9d9;  /*darker shade than background*/
+  text-align:left;
+  vertical-align: middle;
+}
+
+.tablesorter th{
+  vertical-align: middle;
+  text-align: center;
+  background-color: #6fa6dc;
+  font-size: 15px;
+}
+
+
+.tablesorter > tbody > tr:nth-child(odd) > td{
+  text-align:left;
+  vertical-align: middle;
+  padding: 5px 0 5px 8px;
+}
+
+.tablesorter > tbody > tr:nth-child(even) > td{
+  text-align:left;
+  vertical-align: middle;
+  padding: 5px 0 5px 8px;
+}
+
+/*Css for checboxes*/
+ #submitEntry .tablesorter > tbody > tr > td:first-child{
+  text-align:left;
+  vertical-align: middle;
+  padding: 5px 0 5px 0;
+}
+
+#deleteEntry, #editEntry{
+  margin: 0;
+  text-align: center;
+  vertical-align: middle;
+}
+
+
+.timeEntry {
+  background-color: #e6e6e6;
+  color: black;
+  padding-top: 20px;
+  padding-bottom: 5px;
+}
+
+.enteredUnsubmitted {
+  background-color: #e6e6e6;
+  color: black;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+.submittedUnapproved {
+  background-color: #e6e6e6;
+  color: black;
+  padding-top: 5px;
+  padding-bottom: 60px;
+  padding-left: 60px;
+  padding-right: 60px;
+}
+
+
+/* ----------------------------------------------- END TABLE/FORM STYLES ----------------------------------------------- */
+
+
+
+
+
+/* ----------------------------------------------- MODAL STYLES ----------------------------------------------- */
+
+
+/* The Modal (background) */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 10; /* Sit on top */
+  padding-top: 20%; /* Location of the box */
+  text-align: center;
+  top: 0px;
+  left: 0px;
+  margin-left: 0;
+  margin-top: 0;
+  height: 100%;
+  width: 100%;
+  overflow: auto; /* Enable scroll if needed */
+  overflow-y: auto;
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+
+/* Modal Content */
+.modal-content {
+  display:inline-block;
+  margin: 0 auto;
+  /*position: relative;*/
+  background-color: #FFFFFF;
+  color: #000000;
+  margin: auto;
+  padding: 0;
+  border: 1px solid #888;
+  /*max-width: 60%;*/
+  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+}
+
+
+/* The Close Button */
+.close {
+  color: white;
+  float: right;
+  font-size: 25px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: #000;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.modal-header {
+  padding: 2px 16px;
+  background-color: #fefefe;;
+  color: black;
+  font-size: 20px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.modal-body {
+  padding: 2px 16px;
+}
+
+.modal-footer {
+  padding: 2px 16px;
+  text-align: center;
+}
+
+#modalYes, #modalNo, #modalReset {
+
+  padding: 10px 20px;
+  display:block;
+  margin: 0 auto;
+  border: none;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 500;
+  border-radius: 8px;
+  text-decoration: none;
+  display: inline-block;
+}
+#modalYes {
+  color: white;
+}
+
+#modalNo {
+  color: black;
+  border: 1px solid #cccccc;
+}
+
+#modalReset {
+  display:none;
+  color: white;
+}
+
+
+/* ----------------------------------------------- END MODAL STYLES ----------------------------------------------- */
+
+/* Logout button */
+.logout {
+  z-index: 1;
+  float: right;
+  position: absolute;
+  right: 0;
+  top: 0;
+  font-size: 25px;
+}
+/* Time Entry button */
+.timeentry_btn_ribbon {
+  z-index: 1;
+  float: right;
+  position: absolute;
+  right: 244px;
+  top: 0;
+  font-size: 25px;
+}
+/* Approval button */
+.approval_btn_ribbon {
+  z-index: 1;
+  float: right;
+  position: absolute;
+  right: 155px;
+  top: 0;
+  font-size: 25px;
+}
+
+/* Accounts button */
+.accounts_btn_ribbon {
+  z-index: 1;
+  float: right;
+  position: absolute;
+  right: 70px;
+  top: 0;
+  font-size: 25px;
+}
+
+.subgroupEmpty, .normalNoteEmpty, .manNoteEmpty {
+  display:none;
+}

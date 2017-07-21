@@ -1,0 +1,325 @@
+<head>
+  <title>C-STEP Approvals</title>
+
+  <!--<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.0/jquery-ui.min.js"></script>
+  <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.0/themes/smoothness/jquery-ui.css">-->
+
+  <script type="text/javascript">
+
+    document.getElementById("alphaheader").innerHTML = "<h1>Time Approval</h1>";
+
+    $(document).ready(function() {
+
+
+      highlightRow("#pendingTable");  // Highlights selected row when checkbox for respective row is selected/checked
+      checkAll("#pendingTable");      // Hightlight and checks all checkboxes when select all checkbox in heading is clicked
+
+      var BeginDates = {};
+      var EndDates = {};
+
+      <% @dates_from.each do |d| %>
+        var d1 = new Date("<%= d[:date_from] %>");
+        var d2 = new Date("<%= d[:date_from] %>");
+        /*.setHours(0) is required below as the dates from the CSTEP_DB are in the form YYYY-MM-DD.
+        Creating Date objects in javascript with the form YYYY-MM-DD will set the time to 08:00hrs.
+        Datepicker uses the string DD/MM/YY to create date objects. This format sets the time to 00:00hrs.
+        Strange, I know. You'd think javascript would give date strings of different formats without a
+        specified time the same default time, but javascript does not. Therefore, the time of the CSTEP_DB
+        date objects must be set to 00:00hrs to equal those of the Datepicker date objects to actually compare
+        if they are equal or not.*/
+        d1.setHours(0);
+        d2.setHours(0);
+        BeginDates[d1] = d2;
+      <% end %>
+      <% @dates_to.each do |d| %>
+        var d1 = new Date("<%= d[:date_to] %>");
+        var d2 = new Date("<%= d[:date_to] %>");
+        d1.setHours(0);
+        d2.setHours(0);
+        EndDates[d1] = d2;
+      <% end %>
+
+      $('#datepicker').datepicker({
+        beforeShowDay: function (date) {
+          var Begin = BeginDates[date];
+          var End   = EndDates[date];
+            if (Begin) {
+              return [true, 'BeginHighlight', 'Beginning of Pay Period'];
+            }
+            else if (End) {
+              return [false, 'EndHighlight', 'End of Pay Period'];
+            }
+            else {
+              return [false, '', ''];
+            }
+        },
+        dateFormat: "dd/mm/yy"
+      });
+      $('#datepicker').datepicker(
+        "setDate", new Date("<%= @pp_start_s %>")
+      );
+    });
+    </script>
+
+    <script>
+    $(function() {
+      var userslist = [];
+      <% @users.each do |user| %>
+        userslist.push("<%= user[:displayname] %>");
+      <% end %>
+      $( "#employee" ).autocomplete({
+        source: userslist
+      });
+    });
+    </script>
+
+    <script>
+    // Run these scipts upon page load
+    document.body.onload = function() {
+      populateTabs();
+
+      document.getElementById("Approved").style.display = "none";
+      document.getElementById("Pending").style.display = "block";
+
+      document.getElementById("selectbox").addEventListener("change", function() {
+      if(this.value == "submitted") {
+        console.log(this.value);
+        document.getElementById("Approved").style.display = "none";
+        document.getElementById("Pending").style.display = "block";
+      }
+      if(this.value == "approved") {
+        console.log(this.value);
+        document.getElementById("Pending").style.display = "none";
+        document.getElementById("Approved").style.display = "block";
+      }
+      });
+
+      $(document).ready(function() {
+        initialiseSorter();
+        $("#sumSubmitted").text("Total Hours: " + sumHours('hoursSubmitted'));
+        $("#sumApproved").text("Total Hours: " + sumHours('hoursApproved'));
+      });
+    }
+
+    function populateTabs() {
+      // Find a <table> element
+      var pendingTable     = document.getElementById("pendingTable").getElementsByTagName("tbody")[0];
+      var approvedTable    = document.getElementById("approvedTable").getElementsByTagName("tbody")[0];;
+      var row;
+
+      <% @items.each do |item| %>// Add data to cells of table
+      //only acess/authentication conditions used here
+      //field filters are in main.rb /approval_page ; any conditions here alter those
+        <% if (item.user != session[:username] && session[:access] == "admin") then %>
+          <% if item.approved == false then%>
+            row = pendingTable.insertRow(-1);
+            var approve    = row.insertCell(-1);
+            approve.innerHTML    = '<td> <input class="check" type="checkbox" name="checkbox[]" value="<%= item[:id] %>"> </td>';
+          <% elsif item.approved == true %>
+            row = approvedTable.insertRow(-1);
+          <% end %>
+
+          row.id  = <%= item[:id] %>;
+
+          // Insert new cells (<td> elements)
+          var lastname   = row.insertCell(-1);
+          var firstname  = row.insertCell(-1);
+          var date       = row.insertCell(-1);
+          var activity   = row.insertCell(-1);
+          var hours      = row.insertCell(-1);
+          var Cgroup  = row.insertCell(-1);
+          var subgroup   = row.insertCell(-1);
+          var notes      = row.insertCell(-1);
+          var mgmt_notes = row.insertCell(-1);
+
+          <% if item.approved == false %>
+            var approvecnt = row.insertCell(-1);
+            var edit       = row.insertCell(-1);
+            var disapprove = row.insertCell(-1);
+            approvecnt.innerHTML = '<td> <%= item[:approvecount] %> </td>';
+            edit.innerHTML       = '<td> <a href="javascript:void(0)" onclick="openEdit(<%= item[:id] %>)" class="btn btn-warning" name="Edit">Edit</a> </td>'
+            disapprove.innerHTML = '<td> <a href="javascript:void(0)" onclick="openDisapprove(<%= item[:id] %>)" class="btn btn-danger" name="Disapprove">Disapprove</a> </td>'
+          <% end %>
+
+
+          // Assign data to cells
+          employee.innerHTML   = '<td> <%= item[:user] %> </td>';
+          lastname.innerHTML   = '<td> <%= item[:lastname] %> </td>';
+          firstname.innerHTML  = '<td> <%= item[:firstname] %> </td>';
+          date.innerHTML       = '<td> <%= item[:date].strftime("%d/%m/%Y") %> </td>';
+          activity.innerHTML   = '<td> <%= item[:activity] %></td>';
+          hours.innerHTML      = '<td> <%= item[:hours] %> </td>';
+          Cgroup.innerHTML  = '<td> <%= item[:Cgroup]%> </td>';
+          subgroup.innerHTML   = '<td> <%= item[:subgroup]%> </td>';
+          notes.innerHTML      = '<td> <%= item[:notes]%> </td>';
+          mgmt_notes.innerHTML = '<td> <%= item[:man_note]%> </td>';
+
+          <% if item.approved == false %>
+            $(hours).addClass('hoursSubmitted');
+          <% elsif item.approved == true %>
+            $(hours).addClass('hoursApproved');
+          <% end %>
+
+        <% end %>
+      <% end %>
+    }
+    </script>
+  </script>
+</head>
+
+<body>
+
+  <div class="selectable">
+      <label for="selectbox">Table:</br></label>
+      <select id="selectbox" class="selectbox">
+        <option value="submitted" onchange="openTab(event, 'Pending')">Submitted</option>
+        <option value="approved" onchange="openTab(event, 'Approved')">Approved</option>
+      </select>
+
+      <form action="/approval_page" method="get" name ="payperiod" id="payperiod" class="form-inline">
+        <label for="datepicker">Pay Period:</br></label>
+        <input type="text" name="payperiod" id="datepicker" class="datebox" required>
+        <button type="submit" class="btn find">Set Payperiod</button>
+        <label for="employee">Employee:</br></label>
+        <input type="text" name="employee" id="employee" class="employee" value="<%= @userDisplay %>">
+        <button type="submit" class="btn find">Find Employee</button>
+      </form>
+
+      <div class="submitselected">
+        <a href="javascript:void(0)" onclick="openApprove()" class="btn btn-success" name="approve">Approve Selected</a>
+      </div>
+  </div>
+
+  <div class="submittedentries">
+    <form action="/submitapprovals" method="post" name="submitapprovals" id="submitapprovals" onreset="formReset()">
+      <div id="Pending" class="tabcontent">
+        <table id="pendingTable" class="table tablesorter pending" align="center">
+          <thead>
+            <tr>
+              <th class="sorter-false"><input id="submitSelectAll" class="checkbox" type="checkbox"></th>
+              <th>Lastname</th>
+              <th>Firstname</th>
+              <th>Date</th>
+              <th>Activity</th>
+              <th>Total Hours</th>
+              <th>Group</th>
+              <th>Subgroup</th>
+              <th class="sorter-false">Notes</th>
+              <th class="sorter-false">Manager's Notes</th>
+              <th>Approve Count</th>
+              <th class="sorter-false"></th>
+              <th class="sorter-false"></th>
+            </tr>
+          </thead>
+          <tbody>
+          </tbody>
+        </table>
+        <button type="reset" class="resetter btn">Reset</button>
+        <span id="sumSubmitted"></span>
+      </div>
+    </form>
+  </div>
+
+  <div class="approvedentries">
+    <div id="Approved" class="tabcontent">
+      <table id="approvedTable" class="table tablesorter approved" align="center">
+        <thead>
+          <tr>
+            <th>Lastname</th>
+            <th>Firstname</th>
+            <th>Date</th>
+            <th>Activity</th>
+            <th>Total Hours</th>
+            <th>Group</th>
+            <th>Subgroup</th>
+            <th class="sorter-false">Notes</th>
+            <th class="sorter-false">Manager's Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
+      <span id="sumApproved"></span>
+    </div>
+  </div>
+
+</body>
+
+<style>
+
+.resetter {
+  margin-left: 30px;
+}
+
+.table{
+  width: 100%;
+}
+
+.table.tablesorter.approved {
+  margin-top: -20px;
+}
+
+.table.tablesorter.pending {
+  margin-top: 0px;
+}
+
+/* Style the tab content */
+.tabcontent {
+  display: none;
+  margin: 0;
+  width: 100%;
+}
+
+.selectable {
+  display: inline-block;
+  background-color: #f1f1f1;
+  width: 100%;
+  margin: 0;
+  height: 50px;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  padding-left: 20px;
+
+}
+
+.selectbox {
+  margin-top: 8px;
+}
+
+.form-inline {
+  display: inline-block;
+}
+
+.submitselected {
+  display: inline-block;
+}
+
+label {
+  font-size: 17px;
+  margin-left: 17px;
+  display: inline-block;
+
+}
+
+.datebox {
+  width: 100px;
+}
+
+.BeginHighlight a {
+  background-color : #008000 !important;
+  background-image :none !important;
+  color: #FFFFFF !important;
+  font-weight:bold !important;
+  font-size: 12pt;
+}
+
+.ui-datepicker-unselectable.EndHighlight  span.ui-state-default {
+  background-color : #FF0000 !important;
+  background-image :none !important;
+  color: #FFFFFF !important;
+  font-weight:bold !important;
+  font-size: 12pt;
+}
+
+</style>

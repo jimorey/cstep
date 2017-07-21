@@ -1,0 +1,38 @@
+<head>
+   <title>C-STEP Login</title>
+   <script type="text/javascript">
+      $(".logout").toggle();
+      $(".timeentry_btn_ribbon").toggle();
+      $(".approval_btn_ribbon").toggle();
+      $(".accounts_btn_ribbon").toggle();
+      $(".bar").toggle();
+      $(".alphaheader").toggle();
+   </script>
+<head>
+
+<body class="loginBackground">
+<div class= "login">
+   <form action="/" class="form-login" method="post">
+      <br>
+      <h1 class="form-login-heading">C-STEP</h1>
+      <br>
+      <input class ="fixed-input" name ="loginusername" type="text" placeholder="Username" required autofocus >
+      <br><br>
+      <input class ="fixed-input" name ="loginpassword" type="password" placeholder="Password" required>
+      <br><br>
+      <input type="submit" id="login" value="Login" class="btn btn-primary">
+      <div class="error">
+         <% if !flash.empty? %>
+            <div id="flash">
+               <% flash.keys.each do |k| %>
+                  <div class="<%= k %>">
+                     <%= flash[k] %>
+                  </div>
+               <% end %>
+            </div>
+         <% end %>
+      </div>
+   </form>
+</div>
+</body>
+</html>
