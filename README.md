@@ -22,7 +22,7 @@ This version of CSTEP has relaxed restrictions on user roles because:
 
 The development version can be accessed here: https://cstep.herokuapp.com/
 
-Note: The site may take a few seconds to load upon the initial visit as Heroku servers are designed to sleep after a short period of time. This means if no one has accessed the site for a while the server will take a bit of time to wake-up and respond to the request.
+**Note:** The site may take a few seconds to load upon the initial visit as Heroku servers are designed to sleep after a short period of time. This means if no one has accessed the site for a while the server will take a bit of time to wake-up and respond to the request.
 
 Try any of these logins (role). Case sensitive:
 * jim (Manager: ELICOS)
